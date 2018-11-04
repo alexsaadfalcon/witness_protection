@@ -30,6 +30,11 @@ gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 # detect faces in the grayscale image
 rects = detector(gray, 1)
 
+noseInd = range(28, 37)
+rightEyeInd = range(37, 43)
+leftEyeInd = range(43, 49)
+mouthInd = range(49, 69)
+
 # loop over the face detections
 for (i, rect) in enumerate(rects):
 	# determine the facial landmarks for the face region, then
@@ -38,29 +43,37 @@ for (i, rect) in enumerate(rects):
 	shape = face_utils.shape_to_np(shape)
 
 	# loop over the face parts individually
-	for (name, (i, j)) in face_utils.FACIAL_LANDMARKS_IDXS.items():
-		# clone the original image so we can draw on it, then
-		# display the name of the face part on the image
-		clone = image.copy()
-		cv2.putText(clone, name, (10, 30), cv2.FONT_HERSHEY_SIMPLEX,
-			0.7, (0, 0, 255), 2)
+	# for (name, (i, j)) in face_utils.FACIAL_LANDMARKS_IDXS.items():
+	# 	# clone the original image so we can draw on it, then
+	# 	# display the name of the face part on the image
+	# 	clone = image.copy()
+	# 	cv2.putText(clone, name, (10, 30), cv2.FONT_HERSHEY_SIMPLEX,
+	# 		0.7, (0, 0, 255), 2)
 
-		# loop over the subset of facial landmarks, drawing the
-		# specific face part
-		for (x, y) in shape[i:j]:
-			cv2.circle(clone, (x, y), 1, (0, 0, 255), -1)
+	# 	# loop over the subset of facial landmarks, drawing the
+	# 	# specific face part
+	# 	for (x, y) in shape[i:j]:
+	# 		cv2.circle(clone, (x, y), 1, (0, 0, 255), -1)
 
-		# extract the ROI of the face region as a separate image
-		(x, y, w, h) = cv2.boundingRect(np.array([shape[i:j]]))
-		roi = image[y:y + h, x:x + w]
-		roi = imutils.resize(roi, width=250, inter=cv2.INTER_CUBIC)
+	# 	# extract the ROI of the face region as a separate image
+	# 	(x, y, w, h) = cv2.boundingRect(np.array([shape[i:j]]))
+	# 	roi = image[y:y + h, x:x + w]
+	# 	roi = imutils.resize(roi, width=250, inter=cv2.INTER_CUBIC)
 
-		# show the particular face part
-		cv2.imshow("ROI", roi)
-		cv2.imshow("Image", clone)
-		cv2.waitKey(0)
+	# 	# show the particular face part
+	# 	cv2.imshow("ROI", roi)
+	# 	cv2.imshow("Image", clone)
+	# 	cv2.waitKey(0)
 
 	# visualize all facial landmarks with a transparent overlay
+	print(image.shape)
+	print(shape.shape)
 	output = face_utils.visualize_facial_landmarks(image, shape)
-	cv2.imshow("Image", output)
+	blurredOutput = image
+	numBlur = 10
+	for i in range(17, 68):
+		for x in range(shape[i,0] - numBlur, shape[i,0]+numBlur):
+			for y in range(shape[i,1] - numBlur, shape[i,1]+numBlur):
+				blurredOutput[y,x,:] = [0,0,0]
+	cv2.imshow("Image", blurredOutput)
 	cv2.waitKey(0)
