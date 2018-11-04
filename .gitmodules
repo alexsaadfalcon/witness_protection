@@ -1,0 +1,3 @@
+[submodule "simple-faster-rcnn-pytorch"]
+	path = simple-faster-rcnn-pytorch
+	url = https://github.com/derinozturk/simple-faster-rcnn-pytorch.git
