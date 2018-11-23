@@ -1,3 +1,6 @@
 [submodule "simple-faster-rcnn-pytorch"]
 	path = simple-faster-rcnn-pytorch
 	url = https://github.com/derinozturk/simple-faster-rcnn-pytorch.git
+[submodule "wider-face-pascal-voc-annotations"]
+	path = wider-face-pascal-voc-annotations
+	url = https://github.com/derinozturk/wider-face-pascal-voc-annotations.git

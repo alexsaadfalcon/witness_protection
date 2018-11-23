@@ -8,5 +8,5 @@ This repo relies on a few submodules. After cloning the repo run:
 ```bash
 git submodule init
 git submodule update
-
+```
 These commands will pull the code from the submodules.
