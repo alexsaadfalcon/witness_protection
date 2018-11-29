@@ -49,6 +49,8 @@ flags.DEFINE_string('output_path', '/home/derin/datasets/WIDER/tfrecord',
 flags.DEFINE_string('label_map_path',
                     '/home/derin/datasets/WIDER/wider_label_map.pbtxt',
                     'Path to label map proto')
+flags.DEFINE_int('shards', '5', 'Number of shards for dataset.')
+flags.DEFINE_string('dataset', 'WIDER', 'Name of dataset.')
 FLAGS = flags.FLAGS
 
 SETS = ['train', 'val', 'trainval', 'test']
@@ -77,8 +79,6 @@ def dict_to_tf_example(data,
   Raises:
     ValueError: if the image pointed to by data['filename'] is not a valid JPEG
   """
-  print(data['folder'])
-  print('WIDER_' + split)
   img_path = os.path.join('WIDER_' + split, 'images', data['folder'],
                           data['filename'])
   full_path = os.path.join(dataset_directory, img_path)
@@ -141,7 +141,6 @@ def main(_):
     raise ValueError('set must be in : {}'.format(SETS))
 
   data_dir = FLAGS.data_dir
-
   writer = tf.python_io.TFRecordWriter(FLAGS.output_path)
 
   label_map_dict = label_map_util.get_label_map_dict(FLAGS.label_map_path)
@@ -160,21 +159,44 @@ def main(_):
       examples_list[i] = examples_list[i].split('.jpg')[0]
 
   annotations_dir = os.path.join(data_dir, 'WIDER_' + FLAGS.set, 'annotations')
-  for idx, example in enumerate(examples_list):
-    print(example)
-    if idx % 100 == 0:
-      logging.info('On image %d of %d', idx, len(examples_list))
-    path = os.path.join(annotations_dir, example + '.xml')
-    with tf.gfile.GFile(path, 'r') as fid:
-      xml_str = fid.read()
-    xml = etree.fromstring(xml_str)
-    data = dataset_util.recursive_parse_xml_to_dict(xml)['annotation']
+  
+  num_images = len(examples_list)
+  num_per_shard = int(math.ceil(num_images / float(FLAGS.shards)))
 
-    tf_example = dict_to_tf_example(data, FLAGS.data_dir, label_map_dict,
+  for shard_id in range(FLAGS.shards):
+    output_filename = os.path.join(FLAGS.output_path, '%s-%05d-of-%05d.tfrecord' % (FLAGS.dataset, shard_id, FLAGS.shards))
+    with tf.python_io.TFRecordWriter(output_filename) as tfrecord_writer:
+      start_idx = shard_id * num_per_shard
+      end_idx = min((shard_id + 1) * num_per_shard, num_images)
+      for idx in range(start_idx, end_idx):
+        sys.stdout.write('\r>> Converting image %d/%d shard %d' % (
+            i + 1, len(filenames), shard_id))
+        sys.stdout.flush()
+        path = os.path.join(annotations_dir, example + '.xml')
+        with tf.gfile.GFile(path, 'r') as fid:
+          xml_str = fid.read()
+        xml = etree.fromstring(xml_str)
+        data = dataset_util.recursive_parse_xml_to_dict(xml)['annotation']
+        tf_example = dict_to_tf_example(data, FLAGS.data_dir, label_map_dict,
                                     FLAGS.set)
-    writer.write(tf_example.SerializeToString())
+        tfrecord_writer.write(tf_example.SerializeToString())
+  sys.stdout.write('\n')
+  sys.stdout.flush()
+  
+  #for idx, example in enumerate(examples_list):
+  #  if idx % 100 == 0:
+  #    logging.info('On image %d of %d', idx, len(examples_list))
+  #  path = os.path.join(annotations_dir, example + '.xml')
+  #  with tf.gfile.GFile(path, 'r') as fid:
+  #    xml_str = fid.read()
+  #  xml = etree.fromstring(xml_str)
+  #  data = dataset_util.recursive_parse_xml_to_dict(xml)['annotation']
 
-  writer.close()
+  #  tf_example = dict_to_tf_example(data, FLAGS.data_dir, label_map_dict,
+  #                                  FLAGS.set)
+  #  writer.write(tf_example.SerializeToString())
+
+  #writer.close()
 
 
 if __name__ == '__main__':
