@@ -4,6 +4,49 @@ import sys
 import numpy as np
 import cv2
 
+from imutils import face_utils
+import argparse
+import imutils
+import dlib
+import dippykit as dip
+
+size = 51
+blur = dip.windows.window_2d((size, size), window_type='gaussian', variance=100)
+# print(blur)
+
+def convolve2d(im1, im2, mode):
+    #print(im1.shape)
+    #print(im2.shape)
+    res = dip.utilities.convolve2d(im1, im2, mode=mode)
+    #print(res.shape)
+    return res
+
+def smooth(img, points):
+    temp = np.zeros(img.shape)
+    temp[:,:,:] = np.float64(img[:,:,:])
+    size = 7
+    blur = dip.windows.window_2d((size, size), window_type='gaussian', variance=10)
+    points.append(points[0])
+    for i in range(len(points) - 1):
+        startY = min(points[i][0], points[i+1][0])
+        endY = max(points[i][0], points[i+1][0])
+        startX = min(points[i][1], points[i+1][1])
+        endX = max(points[i][1], points[i+1][1])
+
+        try:
+            temp[startX:endX, startY:endY] = convolve2d(temp[startX-size//2:endX+size//2, startY-size//2:endY+size//2], blur, mode='valid')
+        except:
+            pass
+        # for x in range(startX, endX):
+        #     for y in range(startY, endY):
+        #         for c in range(3):
+        #             pass
+        #             temp[x - size//2 : x + size//2, y - size//2 : y + size//2, c] = output[x,y,c] * blur
+        #             #temp[x - size//2 : x + size//2, y - size//2 : y + size//2, c] = 0
+    #img[tempmask] = temp[tempmask]; return img
+    return temp
+
+
 # Read points from text file
 def readPoints(path) :
     # Create an array of points.
@@ -133,21 +176,19 @@ if __name__ == '__main__' :
         sys.exit(1)
 
     # Read images
-    #filename1 = 'donald_trump.jpg'
-    filename1 = 'alex.jpg'
-    filename2 = 'derin.jpg'
+    filename1 = 'hillary_clinton.jpg'
+    filename2 = 'alex.jpg'
+    swap = False
+    (filename1, filename2) = (filename2, filename1) if swap else (filename1, filename2)
     
     img1 = cv2.imread(filename1);
     img2 = cv2.imread(filename2);
-    img1Warped = np.copy(img2);    
+    img1Warped = np.copy(img2);
     
     # Read array of corresponding points
     # points1 = readPoints(filename1 + '.txt')
     # points2 = readPoints(filename2 + '.txt') 
-    from imutils import face_utils
-    import argparse
-    import imutils
-    import dlib
+    
     detector = dlib.get_frontal_face_detector()
     predictor = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')
 
@@ -169,6 +210,7 @@ if __name__ == '__main__' :
     
     indices = [i for i in range(17)]
     indices += [i for i in range(17, 27)][::-1]
+    #indices += [i for i in range(17, 42)][::-1]
     # Read points
     for i in indices:
         x, y = (shape1[i,0], shape1[i,1])
@@ -176,6 +218,7 @@ if __name__ == '__main__' :
 
         x, y = (shape2[i,0], shape2[i,1])
         points2.append((int(x), int(y)))
+
 
     # Find convex hull
     hull1 = []
@@ -219,7 +262,8 @@ if __name__ == '__main__' :
     
     cv2.fillConvexPoly(mask, np.int32(hull8U), (255, 255, 255))
     
-    r = cv2.boundingRect(np.float32([hull2]))    
+    r = cv2.boundingRect(np.float32([hull2]))
+    r1 = cv2.boundingRect(np.float32([hull1]))
     
     center = ((r[0]+int(r[2]/2), r[1]+int(r[3]/2)))
         
@@ -227,7 +271,13 @@ if __name__ == '__main__' :
     # Clone seamlessly.
     output = cv2.seamlessClone(np.uint8(img1Warped), img2, mask, center, cv2.NORMAL_CLONE)
     
+    # smooth normalize lighting
+    #initMean = np.uint8(np.mean(img1[r1[0]:r1[0]+r1[2], r1[1]:r1[1]+r1[3]]))
+    #output[r[0]:r[0]+r[2], r[1]:r[1]+r[3]] += initMean - np.uint8(np.mean(output[r[0]:r[0]+r[2], r[1]:r[1]+r[3]]))
+    output = np.uint8(smooth(output, points2))
+
     cv2.imshow("Face Swapped", output)
+    cv2.imwrite('test.jpg', output)
     cv2.waitKey(0)
     
     cv2.destroyAllWindows()
