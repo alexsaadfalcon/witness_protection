@@ -13,7 +13,7 @@ flags.DEFINE_string('checkpoint', '',
                     'Path to checkpoint.')
 flags.DEFINE_string('label_map', '',
                     'Path to label map pbtxt.')
-flags.DEFINE_int('num_classes', '1',
+flags.DEFINE_integer('num_classes', '1',
                  'Number of classes in dataset.')
 flags.DEFINE_string('image_path', '',
                     'Path to test image.')
@@ -43,7 +43,7 @@ def main(_):
     detection_scores = detection_graph.get_tensor_by_name('detection_scores:0')
     detection_classes = detection_graph.get_tensor_by_name('detection_classes:0')
 
-    num_detection = detection_graph.get_tensor_by_name('num_detection:0')
+    num_detections = detection_graph.get_tensor_by_name('num_detections:0')
 
     image = cv2.imread(FLAGS.image_path)
     image_expanded = np.expand_dims(image, axis=0)
@@ -60,9 +60,16 @@ def main(_):
         np.squeeze(scores),
         category_index,
         use_normalized_coordinates=True,
-        line_thickness=8,
-        min_score_thresh=0.80)
+        line_thickness=4,
+        min_score_thresh=0.70)
 
+    valid_scores = sum([1 for i in np.squeeze(scores) if i > .70])
+    valid_boxes = np.squeeze(boxes)[0:7, :]
+    print(valid_scores)
+    print('Num detection: {}'.format(num))
+    print('Scores: {}'.format(scores))
+    print('Bounding boxes: {}'.format(valid_boxes))
+    print('Bounding boxes shape: {}'.format(boxes.shape))
     # All the results have been drawn on image. Now display the image.
     cv2.imshow('Object detector', image)
 

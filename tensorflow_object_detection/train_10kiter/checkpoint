@@ -1,0 +1,6 @@
+model_checkpoint_path: "/home/derin/school/ece6258/witness_protection/tensorflow_object_detection/train_10kiter/model.ckpt-10000"
+all_model_checkpoint_paths: "/home/derin/school/ece6258/witness_protection/tensorflow_object_detection/train_10kiter/model.ckpt-9173"
+all_model_checkpoint_paths: "/home/derin/school/ece6258/witness_protection/tensorflow_object_detection/train_10kiter/model.ckpt-9437"
+all_model_checkpoint_paths: "/home/derin/school/ece6258/witness_protection/tensorflow_object_detection/train_10kiter/model.ckpt-9701"
+all_model_checkpoint_paths: "/home/derin/school/ece6258/witness_protection/tensorflow_object_detection/train_10kiter/model.ckpt-9966"
+all_model_checkpoint_paths: "/home/derin/school/ece6258/witness_protection/tensorflow_object_detection/train_10kiter/model.ckpt-10000"
