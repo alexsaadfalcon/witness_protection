@@ -9,7 +9,8 @@ import argparse
 import imutils
 import dlib
 import dippykit as dip
-import time
+
+from patch_gatys import computeSwap
 
 def convolve2d(im1, im2, mode):
     # print(im1.shape)
@@ -163,8 +164,8 @@ def warpTriangle(img1, img2, t1, t2):
     img2[r2[1]:r2[1] + r2[3], r2[0]:r2[0] + r2[2]] = img2[r2[1]:r2[1] + r2[3], r2[0]:r2[0] + r2[2]] + img2Rect
 
 
-if __name__ == '__main__':
-
+# if __name__ == '__main__':
+def swapVideo(imagename='alregib.jpg', videoname='input.mp4', outname='output.mp4'):
     # Make sure OpenCV is version 3.0 or above
     (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
 
@@ -172,41 +173,55 @@ if __name__ == '__main__':
         print >> sys.stderr, 'ERROR: Script needs OpenCV 3.0 or higher'
         sys.exit(1)
 
-    # Read images
-    filename1 = 'alregib.jpg'
-    filename2 = 'group.jpg'
-    swap = False
-    (filename1, filename2) = (filename2, filename1) if swap else (filename1, filename2)
-
-    img1 = cv2.imread(filename1);
-    #print(f'img2 size {img2.shape}')
-
-    # Read array of corresponding points
-    # points1 = readPoints(filename1 + '.txt')
-    # points2 = readPoints(filename2 + '.txt')
-
     detector = dlib.get_frontal_face_detector()
     predictor = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')
-
+    img1 = cv2.imread(imagename);
     gray1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
-
-    # detect faces in the grayscale image
-    rects1 = detector(gray1, 1)
-
-    shape1 = predictor(gray1, rects1[0])
+    rects1s = detector(gray1, 1)
+    shape1 = predictor(gray1, rects1s[0])
     shape1 = face_utils.shape_to_np(shape1)
-    cap = cv2.VideoCapture(0)
-    writer = None
-    while True:
-        time.sleep(2)
-        img2 = cap.read()[1]
-        img1Warped = np.copy(img2);
+
+    cap = cv2.VideoCapture(videoname)
+    frame_width = int(cap.get(3))
+    frame_height = int(cap.get(4))
+
+    # out = cv2.VideoWriter('output.avi', cv2.VideoWriter_fourcc(*'MJPG'), 20.0, (frame_height, frame_width))
+    out = cv2.VideoWriter(outname, cv2.VideoWriter_fourcc(*'MP4V'), 20.0, (frame_width, frame_height))
+
+    counter = 0
+    while (cap.isOpened()):
+        print(f'FRAME {counter}')
+        counter += 1
+        # if counter > 2000:
+        #     break
+
+        ret, img2 = cap.read()
+        if not ret:
+            break
+
+        # print(f'img2 size {img2.shape}')
+        img1Warped = np.copy(img2)
+
+        # Read array of corresponding points
+        # points1 = readPoints(filename1 + '.txt')
+        # points2 = readPoints(filename2 + '.txt')
+
         gray2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
+
+        # detect faces in the grayscale image
         rects2s = detector(gray2, 1)
 
+
+        # img2temp = np.zeros(img2.shape)
         img2temp = img2[:, :, :]
-        for rects2 in rects2s:
+        # for faceCoord in faceCoords:
+        if not rects2s:
+            out.write(img2)
+            continue
+
+        for rects2 in [rects2s[0]]:
             try:
+                # rects2 = dlib.rectangle(int(faceCoord[0][0]), int(faceCoord[0][1]), int(faceCoord[1][0]), int(faceCoord[1][1]))
                 shape2 = predictor(gray2, rects2)
                 shape2 = face_utils.shape_to_np(shape2)
 
@@ -272,39 +287,28 @@ if __name__ == '__main__':
                 # Clone seamlessly.
                 output = cv2.seamlessClone(np.uint8(img1Warped), img2, mask, center, cv2.NORMAL_CLONE)
 
-                img2temp[mask==255] = output[mask==255]
+                img2temp[mask == 255] = output[mask == 255]
 
                 # smooth normalize lighting
                 # output = np.uint8(smooth(output, points2))
             except:
                 pass
 
-        if writer is not None:
-            writer.write(img2temp)
+        # cv2.imshow("Face Swapped", img2temp)
+        # cv2.imwrite('test.jpg', img2temp)
+        # cv2.waitKey(0)
+        #
+        # cv2.destroyAllWindows()
+            swapped = computeSwap(img2[rects2.top():rects2.bottom(), rects2.left():rects2.right(), :],
+                                  img2temp[rects2.top():rects2.bottom(), rects2.left():rects2.right(), :])
+            if swapped is not None:
+                img2[rects2.top():rects2.bottom(), rects2.left():rects2.right(), :] = swapped
+                out.write(img2)
 
-        cv2.imshow('image', img2temp)
-        key = cv2.waitKey(1)
-
-        if key == 27:
-            break
-        if key == ord('t'):
-            drawOverlay = not drawOverlay
-        if key == ord('r'):
-            if writer is None:
-                print("Starting video writer")
-
-                writer = cv2.VideoWriter("../out.avi", cv2.cv.CV_FOURCC('X', 'V', 'I', 'D'), 25,
-                                         (img2temp.shape[1], img2temp.shape[0]))
-
-                if writer.isOpened():
-                    print("Writer succesfully opened")
-                else:
-                    writer = None
-                    print("Writer opening failed")
-            else:
-                print("Stopping video writer")
-                writer.release()
-                writer = None
-
+    out.release()
+    cap.release()
     cv2.destroyAllWindows()
 
+#swapVideo(imagename='alregib', videoname='input.mp4')
+for i in range(1):
+    swapVideo(imagename='trump1.jpg', videoname=f'input{i}.mp4', outname=f'output{i}.mp4')

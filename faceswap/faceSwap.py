@@ -10,8 +10,8 @@ import imutils
 import dlib
 import dippykit as dip
 
-size = 51
-blur = dip.windows.window_2d((size, size), window_type='gaussian', variance=100)
+# size = 51
+# blur = dip.windows.window_2d((size, size), window_type='gaussian', variance=100)
 # print(blur)
 
 def convolve2d(im1, im2, mode):
@@ -166,7 +166,7 @@ def warpTriangle(img1, img2, t1, t2) :
     img2[r2[1]:r2[1]+r2[3], r2[0]:r2[0]+r2[2]] = img2[r2[1]:r2[1]+r2[3], r2[0]:r2[0]+r2[2]] + img2Rect 
     
 
-if __name__ == '__main__' :
+if __name__ == '__main__':
     
     # Make sure OpenCV is version 3.0 or above
     (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
@@ -176,18 +176,14 @@ if __name__ == '__main__' :
         sys.exit(1)
 
     # Read images
-    filename1 = 'hillary_clinton.jpg'
+    filename1 = 'cruz.jpg'
     filename2 = 'alex.jpg'
     swap = False
     (filename1, filename2) = (filename2, filename1) if swap else (filename1, filename2)
     
-    img1 = cv2.imread(filename1);
-    img2 = cv2.imread(filename2);
-    img1Warped = np.copy(img2);
-    
-    # Read array of corresponding points
-    # points1 = readPoints(filename1 + '.txt')
-    # points2 = readPoints(filename2 + '.txt') 
+    img1 = cv2.imread(filename1)
+    img2 = cv2.imread(filename2)
+    img1Warped = np.copy(img2)
     
     detector = dlib.get_frontal_face_detector()
     predictor = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')

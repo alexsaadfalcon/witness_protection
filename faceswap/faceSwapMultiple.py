@@ -10,22 +10,22 @@ import imutils
 import dlib
 import dippykit as dip
 
-size = 51
-blur = dip.windows.window_2d((size, size), window_type='gaussian', variance=100)
-
-faceCoords = np.array(
-    [[(0.24735554,0.10720145),(0.36570778,0.16026658)],
-    [(0.29790404,0.25025880),(0.41897747,0.30912185)],
-    [(0.18756560,0.66909546),(0.3116816, 0.72833866)],
-    [(0.33690974,0.39007744),(0.44652465,0.44727406)],
-    [(0.26383144,0.51849484),(0.38366628,0.57943654)],
-    [(0.03893245,0.12060487),(0.11762318,0.15940729)],
-    [(0.16116267,0.81741565),(.27264458,0.8778694)]])
-for faceCoord in faceCoords:
-    for tuples in faceCoord:
-        (tuples[0], tuples[1]) = (960*tuples[1], 600*tuples[0])
-
-faceCoords = np.uint32(faceCoords)
+# size = 51
+# blur = dip.windows.window_2d((size, size), window_type='gaussian', variance=100)
+#
+# faceCoords = np.array(
+#     [[(0.24735554,0.10720145),(0.36570778,0.16026658)],
+#     [(0.29790404,0.25025880),(0.41897747,0.30912185)],
+#     [(0.18756560,0.66909546),(0.3116816, 0.72833866)],
+#     [(0.33690974,0.39007744),(0.44652465,0.44727406)],
+#     [(0.26383144,0.51849484),(0.38366628,0.57943654)],
+#     [(0.03893245,0.12060487),(0.11762318,0.15940729)],
+#     [(0.16116267,0.81741565),(.27264458,0.8778694)]])
+# for faceCoord in faceCoords:
+#     for tuples in faceCoord:
+#         (tuples[0], tuples[1]) = (960*tuples[1], 600*tuples[0])
+#
+# faceCoords = np.uint32(faceCoords)
 # print(faceCoords)
 # print(blur)
 
@@ -182,7 +182,9 @@ def warpTriangle(img1, img2, t1, t2):
 
 
 if __name__ == '__main__':
-
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--content-img',type=str,default='content_img.jpg',help='The content image')
+    args = parser.parse_args()
     # Make sure OpenCV is version 3.0 or above
     (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
 
@@ -192,7 +194,7 @@ if __name__ == '__main__':
 
     # Read images
     filename1 = 'alregib.jpg'
-    filename2 = 'group.jpg'
+    filename2 = 'alex.jpg'
     swap = False
     (filename1, filename2) = (filename2, filename1) if swap else (filename1, filename2)
 
@@ -212,17 +214,22 @@ if __name__ == '__main__':
     gray2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
 
     # detect faces in the grayscale image
-    rects1 = detector(gray1, 1)
+    rects1s = detector(gray1, 1)
     rects2s = detector(gray2, 1)
+    if len(rects2s):
+        rects2 = rects2s[0]
+        fname = 'content_img.jpg'
+        cv2.imwrite(fname, img2[rects2.top():rects2.bottom(), rects2.left():rects2.right(), :])
 
-    shape1 = predictor(gray1, rects1[0])
+    shape1 = predictor(gray1, rects1s[0])
     shape1 = face_utils.shape_to_np(shape1)
 
     # img2temp = np.zeros(img2.shape)
     img2temp = img2[:,:,:]
-    for faceCoord in faceCoords:
+    # for faceCoord in faceCoords:
+    for n, rects2 in enumerate(rects2s):
         try:
-            rects2 = dlib.rectangle(int(faceCoord[0][0]), int(faceCoord[0][1]), int(faceCoord[1][0]), int(faceCoord[1][1]))
+            #rects2 = dlib.rectangle(int(faceCoord[0][0]), int(faceCoord[0][1]), int(faceCoord[1][0]), int(faceCoord[1][1]))
             shape2 = predictor(gray2, rects2)
             shape2 = face_utils.shape_to_np(shape2)
 
@@ -289,14 +296,18 @@ if __name__ == '__main__':
             output = cv2.seamlessClone(np.uint8(img1Warped), img2, mask, center, cv2.NORMAL_CLONE)
 
             img2temp[mask==255] = output[mask==255]
-
+            fname = 'affineSwap' + str(n) + '.jpg'
+            fname = 'style_img.jpg'
+            cv2.imwrite(fname, img2temp[rects2.top():rects2.bottom(), rects2.left():rects2.right(), :])
+            #print(rects2.top(), rects2.bottom(), rects2.left(), rects2.right())
+            print('Wrote image ' + str(n))
             # smooth normalize lighting
             # output = np.uint8(smooth(output, points2))
-        except:
-            pass
+        except Exception as e:
+            print(e)
 
     cv2.imshow("Face Swapped", img2temp)
-    cv2.imwrite('test.jpg', img2temp)
+    #cv2.imwrite('test.jpg', img2temp)
     cv2.waitKey(0)
 
     cv2.destroyAllWindows()
