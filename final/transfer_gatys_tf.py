@@ -116,7 +116,7 @@ def main():
     sess = tf.Session(config=tf_config)
     counter = 0
 
-    with open('results/results.txt', 'a') as of:
+    with open('results.txt', 'a') as of:
         of.write('RESULTS FILE\n')
     sess.run(tf.global_variables_initializer())
     for lr_rate in np.logspace(-2, 1, 2):
@@ -218,7 +218,7 @@ def main():
                                 saved_img.save(output_name)
                                 print("[!] image saved as %s\n"%output_name)
 
-                        with open('results/results.txt', 'a') as of:
+                        with open('results.txt', 'a') as of:
                             of.write(f'{counter}, learning rate: {lr_rate}, style weight: {style_weight}, '
                                      f'content layers {content_layers}, style layers {style_layers}')
 
