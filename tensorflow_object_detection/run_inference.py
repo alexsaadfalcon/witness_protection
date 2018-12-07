@@ -9,9 +9,9 @@ from object_detection.utils import visualization_utils as vis_util
 
 
 flags = tf.app.flags
-flags.DEFINE_string('checkpoint', '',
+flags.DEFINE_string('checkpoint', './inference_graph/frozen_inference_graph.pb',
                     'Path to checkpoint.')
-flags.DEFINE_string('label_map', '',
+flags.DEFINE_string('label_map', './wider_label_map.pbtxt',
                     'Path to label map pbtxt.')
 flags.DEFINE_integer('num_classes', '1',
                  'Number of classes in dataset.')
