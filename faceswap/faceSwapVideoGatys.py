@@ -165,7 +165,7 @@ def warpTriangle(img1, img2, t1, t2):
 
 
 # if __name__ == '__main__':
-def swapVideo(imagename='pratt.jpg', videoname='input.mp4', outname='output.mp4'):
+def swapVideo(imagename='pratt.jpg', videoname='input1.mp4', outname='output.mp4'):
     # Make sure OpenCV is version 3.0 or above
     (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
 
@@ -309,6 +309,5 @@ def swapVideo(imagename='pratt.jpg', videoname='input.mp4', outname='output.mp4'
     cap.release()
     cv2.destroyAllWindows()
 
-#swapVideo(imagename='alregib', videoname='input.mp4')
 for i in range(1):
     swapVideo(imagename='hemsworth.jpg', videoname=f'input1.mp4', outname=f'output{i}.mp4')
