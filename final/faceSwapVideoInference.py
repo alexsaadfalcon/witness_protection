@@ -312,6 +312,6 @@ def swapVideo(imagename='alregib.jpg', videoname='input.mp4', outname='output.mp
 
 #swapVideo(imagename='alregib', videoname='input.mp4')
 
-imagenames = ['alregib.jpg', 'cruz.jpg', 'trump1.jpg', 'goldblum.jpg', 'goldblum.jpg', 'trump2.jpeg']
-for i in range(1, 5):
-    swapVideo(imagename=imagenames[i], videoname=f'input{i}.mp4', outname=f'output{i}.mp4')
+imagenames = ['evans.jpg', 'hemsworth.jpg', 'pratt.jpg']
+for i in range(3):
+    swapVideo(imagename=imagenames[i], videoname=f'input1.mp4', outname=f'output{i}.mp4')
