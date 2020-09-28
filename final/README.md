@@ -1,4 +1,4 @@
-
+﻿
 #### Face Detection and Obfuscation in Video
 
 ### How to use this repo:
@@ -13,8 +13,10 @@ If you want to retrain the model, we have provided several files to make the pro
 
 
 ### OBFUSCATION
-To perform the face obfuscation, use python3 -m pip install on the following libraries:
-numpy, cv2, dlib, imutils, dippykit, scipy, tensorflow, pillow
+To perform the face obfuscation, install the following libraries 
+```bash
+python -m pip install numpy opencv-python dlib imutils dippykit scipy tensorflow pillow
+```
 
 Next, download the VGG19 convolutional neural network into the final directory from https://github.com/tensorlayer/pretrained-models/blob/master/models/vgg19.npy
 
