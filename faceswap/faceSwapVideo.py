@@ -304,7 +304,5 @@ def swapVideo(imagename='alregib.jpg', videoname='input.mp4', outname='output.mp
     cap.release()
     cv2.destroyAllWindows()
 
-#swapVideo(imagename='alregib', videoname='input.mp4')
-
-for i in range(2, 4):
-    swapVideo(imagename='goldblum.jpg', videoname=f'input{i}.mp4', outname=f'output{i}.mp4')
+for i in range(1):
+    swapVideo(imagename='evans.jpg', videoname=f'input1.mp4', outname=f'output{i}.mp4')
