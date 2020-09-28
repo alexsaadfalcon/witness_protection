@@ -176,8 +176,11 @@ if __name__ == '__main__':
         sys.exit(1)
 
     # Read images
-    filename1 = 'cruz.jpg'
-    filename2 = 'alex.jpg'
+    filename1 = 'pratt.jpg'
+    filename2 = 'hemsworth.jpg'
+    # filename2 = 'evans.jpg'
+    # filename1, filename2 = filename2, filename1
+
     swap = False
     (filename1, filename2) = (filename2, filename1) if swap else (filename1, filename2)
     
