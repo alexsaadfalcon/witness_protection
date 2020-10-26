@@ -14,3 +14,8 @@ git submodule init
 git submodule update
 ```
 These commands will pull the code from the submodules.
+
+### Acknowledgements
+
+Thank you to [Satya Mallick](https://www.learnopencv.com/face-swap-using-opencv-c-python/) for sharing his expertise.
+
